@@ -1,8 +1,9 @@
 package adolin.starter.config;
 
 import adolin.starter.updatable.DefaultUpdatableBeanRegistry;
+import adolin.starter.updatable.UpdatableAnnotationBeanPostProcessor;
+import adolin.starter.updatable.UpdatableBeanMemberInfoExtractor;
 import adolin.starter.updatable.UpdatableBeanRegistry;
-import adolin.starter.updatable.UpdatableFieldsInitializer;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,25 +16,36 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class CommonAutoConfiguration {
 
-  /**
-   * Инициализатор бинов с обновляемыми свойствами.
-   *
-   * @return {@link UpdatableFieldsInitializer}
-   */
-  @ConditionalOnMissingBean
-  @Bean
-  public UpdatableFieldsInitializer updatableFieldsInitializer() {
-    return new UpdatableFieldsInitializer();
-  }
+    /**
+     * Реестр обновляемых свойств.
+     *
+     * @return {@link DefaultUpdatableBeanRegistry}
+     */
+    @ConditionalOnMissingBean
+    @Bean
+    public UpdatableBeanRegistry updatableBeanRegistry() {
+        return new DefaultUpdatableBeanRegistry();
+    }
 
-  /**
-   * Реестр обновляемых свойств.
-   *
-   * @return {@link DefaultUpdatableBeanRegistry}
-   */
-  @ConditionalOnMissingBean
-  @Bean
-  public UpdatableBeanRegistry updatableBeanRegistry() {
-    return new DefaultUpdatableBeanRegistry();
-  }
+    /**
+     * Обработчик бинов, который добавляет в бины функционал обновляемых полей.
+     *
+     * @return {@link UpdatableAnnotationBeanPostProcessor}
+     */
+    @ConditionalOnMissingBean
+    @Bean
+    public UpdatableAnnotationBeanPostProcessor updatableAnnotationBeanPostProcessor() {
+        return new UpdatableAnnotationBeanPostProcessor();
+    }
+
+    /**
+     * Обработчик, извлекающий из класса обновляемые поля и сеттеры.
+     *
+     * @return {@link UpdatableBeanMemberInfoExtractor}
+     */
+    @ConditionalOnMissingBean
+    @Bean
+    public UpdatableBeanMemberInfoExtractor updatableBeanMemberInfoExtractor() {
+        return new UpdatableBeanMemberInfoExtractor();
+    }
 }
