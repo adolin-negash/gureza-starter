@@ -156,9 +156,19 @@ class UpdatableBeanMemberInfoExtractorTest extends AbstractMockTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"simpleStaticMethod", "methodWithParam"})
+    @ValueSource(strings = {"simpleStaticMethod", "methodWithParam", ""})
     void shouldNotFindOnUpdateMethod(String methodName) {
         assertNull(getOnUpdateMethod(methodName));
+    }
+
+    @Test
+    void shouldNotFindOnNullMethodName() {
+        assertNull(getOnUpdateMethod(null));
+    }
+
+    @Test
+    void shouldNotFindOnNullClass() {
+        assertNull(infoExtractor.extractOnUpdateMethod(null, "xxx"));
     }
 
     private Method getOnUpdateMethod(String methodName) {

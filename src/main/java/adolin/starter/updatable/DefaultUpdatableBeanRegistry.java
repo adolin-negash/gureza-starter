@@ -18,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.EnvironmentAware;
 import org.springframework.core.env.Environment;
 
 import static java.util.Collections.emptyList;
@@ -30,7 +31,7 @@ import static org.apache.commons.lang3.reflect.MethodUtils.getAccessibleMethod;
  * @author Adolin Negash 14.05.2021
  */
 @Slf4j
-public class DefaultUpdatableBeanRegistry implements UpdatableBeanRegistry {
+public class DefaultUpdatableBeanRegistry implements UpdatableBeanRegistry, EnvironmentAware {
 
     private static final Class<?>[] SETTER_SIGNATURE = {String.class};
 
@@ -53,11 +54,20 @@ public class DefaultUpdatableBeanRegistry implements UpdatableBeanRegistry {
 
     private final ConcurrentHashMap<String, BeanInfo> beans = new ConcurrentHashMap<>();
 
-    @Autowired
     private Environment environment;
 
     @Autowired
     private UpdatableBeanMemberInfoExtractor infoExtractor;
+
+    /**
+     * Записывает объект окружения ({@link Environment}).
+     *
+     * @param environment объект окружения.
+     */
+    @Override
+    public void setEnvironment(Environment environment) {
+        this.environment = environment;
+    }
 
     /**
      * Регистрирует в реестре бин с обновляемыми свойствами.
@@ -110,7 +120,7 @@ public class DefaultUpdatableBeanRegistry implements UpdatableBeanRegistry {
             updateProperty(propertyName, propertyInfo.getValue());
         }
 
-        String onUpdateMethodName = annotation.onUpdateMethod();
+        final String onUpdateMethodName = annotation.onUpdateMethod();
         Method onUpdateMethod = infoExtractor.extractOnUpdateMethod(proxyBeanClass, onUpdateMethodName);
         if (onUpdateMethod == null) {
             onUpdateMethod = infoExtractor.extractOnUpdateMethod(beanClass, onUpdateMethodName);

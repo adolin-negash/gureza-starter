@@ -8,6 +8,7 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.reflect.MethodUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
+import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNoneBlank;
 import static org.apache.commons.lang3.reflect.FieldUtils.getAllFieldsList;
 import static org.apache.commons.lang3.reflect.MethodUtils.getMethodsListWithAnnotation;
@@ -60,6 +61,10 @@ public class UpdatableBeanMemberInfoExtractor {
      * @return метод бина.
      */
     public Method extractOnUpdateMethod(Class<?> beanClass, String methodName) {
+        if(isBlank(methodName) || beanClass == null) {
+            return null;
+        }
+
         final Method method = MethodUtils.getMatchingMethod(beanClass, methodName);
         if (method != null) {
             final int modifiers = method.getModifiers();
