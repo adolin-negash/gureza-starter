@@ -1,5 +1,6 @@
 package adolin.starter.updatable;
 
+import adolin.starter.annotations.Updatable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Objects;
@@ -9,7 +10,7 @@ import lombok.extern.slf4j.Slf4j;
  * Информация о сеттере бина.
  *
  * @author Adolin Negash 17.05.2021
- * @see adolin.starter.annotations.UpdatableBean
+ * @see Updatable
  */
 @Slf4j
 public class BeanMethodInfo extends BeanMemberInfo {

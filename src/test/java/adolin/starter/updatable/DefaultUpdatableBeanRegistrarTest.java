@@ -7,14 +7,14 @@ import org.mockito.Mock;
 import org.springframework.core.env.Environment;
 
 /**
- * Класс для тестирования {@link DefaultUpdatableBeanRegistry}
+ * Класс для тестирования {@link DefaultUpdatableBeanRegistrar}
  *
  * @author Adolin Negash 20.05.2021
  */
-class DefaultUpdatableBeanRegistryTest extends AbstractMockTest {
+class DefaultUpdatableBeanRegistrarTest extends AbstractMockTest {
 
     @InjectMocks
-    private DefaultUpdatableBeanRegistry subj;
+    private DefaultUpdatableBeanRegistrar subj;
 
     @Mock
     private Environment environment;

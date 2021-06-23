@@ -9,7 +9,7 @@ import java.lang.annotation.Target;
  * Аннотация помечает поля или сеттеры, значения которых берутся из свойств и могут обновляться.
  *
  * @author Adolin Negash 13.05.2021
- * @see UpdatableBean
+ * @see Updatable
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.FIELD})

@@ -1,6 +1,6 @@
 package adolin.starter.updatable;
 
-import adolin.starter.annotations.UpdatableBean;
+import adolin.starter.annotations.Updatable;
 import adolin.starter.annotations.UpdatableValue;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -31,7 +31,7 @@ import static org.apache.commons.lang3.reflect.MethodUtils.getAccessibleMethod;
  * @author Adolin Negash 14.05.2021
  */
 @Slf4j
-public class DefaultUpdatableBeanRegistry implements UpdatableBeanRegistry, EnvironmentAware {
+public class DefaultUpdatableBeanRegistrar implements UpdatableBeanRegistrar, EnvironmentAware {
 
     private static final Class<?>[] SETTER_SIGNATURE = {String.class};
 
@@ -81,7 +81,7 @@ public class DefaultUpdatableBeanRegistry implements UpdatableBeanRegistry, Envi
     public synchronized void registerBean(String beanName,
         Object bean,
         Object proxyBean,
-        UpdatableBean annotation) {
+        Updatable annotation) {
 
         requireNonNull(beanName, "empty beanName");
         requireNonNull(bean, "empty bean");
@@ -90,6 +90,10 @@ public class DefaultUpdatableBeanRegistry implements UpdatableBeanRegistry, Envi
 
         final Class<?> beanClass = bean.getClass();
         final Class<?> proxyBeanClass = proxyBean.getClass();
+
+        if (log.isDebugEnabled()) {
+            log.debug("REGISTER UPDATABLE BEAN {}: [{}]", beanName, beanClass);
+        }
 
         final Stream<Pair<UpdatableValue, BeanMemberInfo>> fieldMembers = infoExtractor
             .extractUpdatableFields(beanClass)

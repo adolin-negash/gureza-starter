@@ -1,10 +1,9 @@
 package adolin.starter.config;
 
-import adolin.starter.updatable.DefaultUpdatableBeanRegistry;
+import adolin.starter.updatable.DefaultUpdatableBeanRegistrar;
 import adolin.starter.updatable.UpdatableAnnotationBeanPostProcessor;
 import adolin.starter.updatable.UpdatableBeanMemberInfoExtractor;
-import adolin.starter.updatable.UpdatableBeanRegistry;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import adolin.starter.updatable.UpdatableBeanRegistrar;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -19,12 +18,11 @@ public class CommonAutoConfiguration {
     /**
      * Реестр обновляемых свойств.
      *
-     * @return {@link DefaultUpdatableBeanRegistry}
+     * @return {@link DefaultUpdatableBeanRegistrar}
      */
-    @ConditionalOnMissingBean
     @Bean
-    public UpdatableBeanRegistry updatableBeanRegistry() {
-        return new DefaultUpdatableBeanRegistry();
+    public UpdatableBeanRegistrar updatableBeanRegistry() {
+        return new DefaultUpdatableBeanRegistrar();
     }
 
     /**
@@ -32,9 +30,9 @@ public class CommonAutoConfiguration {
      *
      * @return {@link UpdatableAnnotationBeanPostProcessor}
      */
-    @ConditionalOnMissingBean
     @Bean
     public UpdatableAnnotationBeanPostProcessor updatableAnnotationBeanPostProcessor() {
+        System.out.println("create updatableAnnotationBeanPostProcessor");
         return new UpdatableAnnotationBeanPostProcessor();
     }
 
@@ -43,7 +41,6 @@ public class CommonAutoConfiguration {
      *
      * @return {@link UpdatableBeanMemberInfoExtractor}
      */
-    @ConditionalOnMissingBean
     @Bean
     public UpdatableBeanMemberInfoExtractor updatableBeanMemberInfoExtractor() {
         return new UpdatableBeanMemberInfoExtractor();

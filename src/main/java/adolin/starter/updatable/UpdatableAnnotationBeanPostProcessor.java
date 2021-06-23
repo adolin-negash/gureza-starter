@@ -1,8 +1,9 @@
 package adolin.starter.updatable;
 
-import adolin.starter.annotations.UpdatableBean;
+import adolin.starter.annotations.Updatable;
 import java.util.HashMap;
 import java.util.Map;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
@@ -21,15 +22,16 @@ import static org.springframework.beans.factory.config.BeanDefinition.SCOPE_SING
  *
  * @author Adolin Negash 17.05.2021
  */
+@Slf4j
 public class UpdatableAnnotationBeanPostProcessor implements BeanPostProcessor, BeanFactoryAware, Ordered {
 
-    private final Map<String, Pair<Object, UpdatableBean>> beansMap = new HashMap<>();
+    private final Map<String, Pair<Object, Updatable>> beansMap = new HashMap<>();
 
     @Autowired
     private ConfigurableListableBeanFactory beanFactory;
 
     @Autowired
-    private UpdatableBeanRegistry registry;
+    private UpdatableBeanRegistrar registry;
 
     /**
      * Обрабатывает бины до того, как они будут обернуты в proxy-сервера.
@@ -40,19 +42,27 @@ public class UpdatableAnnotationBeanPostProcessor implements BeanPostProcessor, 
      * @throws BeansException ошибка при обработке.
      */
     @Override
-    public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
+    public synchronized Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
 
-        UpdatableBean annotation = beanFactory.findAnnotationOnBean(beanName, UpdatableBean.class);
-        if (annotation != null) {
-            final BeanDefinition beanDefinition = beanFactory.getBeanDefinition(beanName);
-            final String scope = beanDefinition.getScope();
-            if (isNoneBlank(scope) && !SCOPE_SINGLETON.equals(scope)) {
-                throw new IllegalStateException(
-                    String.format("Cannot use scope [%s] with annotation UpdatableBean in bean [%s]", scope, beanName));
+        try {
+            if (beanFactory.containsBean(beanName)) {
+                Updatable annotation = beanFactory.findAnnotationOnBean(beanName, Updatable.class);
+                if (annotation != null) {
+                    final BeanDefinition beanDefinition = beanFactory.getBeanDefinition(beanName);
+                    final String scope = beanDefinition.getScope();
+                    if (isNoneBlank(scope) && !SCOPE_SINGLETON.equals(scope)) {
+                        throw new IllegalStateException(
+                            String.format("Cannot use scope [%s] with annotation UpdatableBean in bean [%s]", scope,
+                                beanName));
+                    }
+                    beansMap.put(beanName, Pair.of(bean, annotation));
+                }
             }
-            beansMap.put(beanName, Pair.of(bean, annotation));
+            return bean;
+        } catch (Throwable e) {
+            log.error("error ing bean {} [{}]", beanName, bean.getClass(), e);
+            throw e;
         }
-        return bean;
     }
 
     /**
@@ -64,9 +74,9 @@ public class UpdatableAnnotationBeanPostProcessor implements BeanPostProcessor, 
      * @throws BeansException ошибка при обработке.
      */
     @Override
-    public Object postProcessAfterInitialization(Object proxyBean, String beanName) throws BeansException {
+    public synchronized Object postProcessAfterInitialization(Object proxyBean, String beanName) throws BeansException {
 
-        Pair<Object, UpdatableBean> pair = beansMap.get(beanName);
+        Pair<Object, Updatable> pair = beansMap.get(beanName);
         if (pair != null) {
             registry.registerBean(beanName, pair.getLeft(), proxyBean, pair.getRight());
             beansMap.remove(beanName);

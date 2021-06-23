@@ -1,7 +1,7 @@
 package adolin.starter.updatable;
 
 import adolin.starter.AbstractMockTest;
-import adolin.starter.annotations.UpdatableBean;
+import adolin.starter.annotations.Updatable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -34,13 +34,13 @@ class UpdatableAnnotationBeanPostProcessorTest extends AbstractMockTest {
     private UpdatableAnnotationBeanPostProcessor subj;
 
     @Mock
-    private UpdatableBeanRegistry registry;
+    private UpdatableBeanRegistrar registry;
 
     @Mock
     private ConfigurableListableBeanFactory beanFactory;
 
     @Mock
-    private UpdatableBean updatableBeanAnnotation;
+    private Updatable updatableBeanAnnotation;
 
     @Mock
     private BeanDefinition beanDefinition;
@@ -55,7 +55,7 @@ class UpdatableAnnotationBeanPostProcessorTest extends AbstractMockTest {
     private ArgumentCaptor<String> beanNameCaptor;
 
     @Captor
-    private ArgumentCaptor<UpdatableBean> beanAnnotationCaptor;
+    private ArgumentCaptor<Updatable> beanAnnotationCaptor;
 
     @AfterEach
     void tearDown() {
@@ -79,27 +79,31 @@ class UpdatableAnnotationBeanPostProcessorTest extends AbstractMockTest {
     void shouldNotAddBeanWithoutAnnotation() {
         final Object bean = new Object();
 
-        when(beanFactory.findAnnotationOnBean(eq(BEAN_NAME), eq(UpdatableBean.class)))
+        when(beanFactory.containsBean(eq(BEAN_NAME))).thenReturn(true);
+        when(beanFactory.findAnnotationOnBean(eq(BEAN_NAME), eq(Updatable.class)))
             .thenReturn(null);
 
         assertSame(bean, subj.postProcessBeforeInitialization(bean, BEAN_NAME));
         assertSame(bean, subj.postProcessAfterInitialization(bean, BEAN_NAME));
 
-        verify(beanFactory).findAnnotationOnBean(eq(BEAN_NAME), eq(UpdatableBean.class));
+        verify(beanFactory).containsBean(eq(BEAN_NAME));
+        verify(beanFactory).findAnnotationOnBean(eq(BEAN_NAME), eq(Updatable.class));
     }
 
     @Test
     void shouldThrowWhenIncompatibleScope() {
         final Object bean = new Object();
 
-        when(beanFactory.findAnnotationOnBean(eq(BEAN_NAME), eq(UpdatableBean.class)))
+        when(beanFactory.containsBean(eq(BEAN_NAME))).thenReturn(true);
+        when(beanFactory.findAnnotationOnBean(eq(BEAN_NAME), eq(Updatable.class)))
             .thenReturn(updatableBeanAnnotation);
         when(beanFactory.getBeanDefinition(BEAN_NAME)).thenReturn(beanDefinition);
         when(beanDefinition.getScope()).thenReturn("new scope");
 
         assertThrows(IllegalStateException.class, () -> subj.postProcessBeforeInitialization(bean, BEAN_NAME));
 
-        verify(beanFactory).findAnnotationOnBean(eq(BEAN_NAME), eq(UpdatableBean.class));
+        verify(beanFactory).containsBean(eq(BEAN_NAME));
+        verify(beanFactory).findAnnotationOnBean(eq(BEAN_NAME), eq(Updatable.class));
         verify(beanFactory).getBeanDefinition(BEAN_NAME);
         verify(beanDefinition).getScope();
     }
@@ -109,14 +113,16 @@ class UpdatableAnnotationBeanPostProcessorTest extends AbstractMockTest {
         final Object bean = new Object();
         final Object proxyBean = new Object();
 
-        when(beanFactory.findAnnotationOnBean(eq(BEAN_NAME), eq(UpdatableBean.class)))
+        when(beanFactory.containsBean(eq(BEAN_NAME))).thenReturn(true);
+        when(beanFactory.findAnnotationOnBean(eq(BEAN_NAME), eq(Updatable.class)))
             .thenReturn(updatableBeanAnnotation);
         when(beanFactory.getBeanDefinition(BEAN_NAME)).thenReturn(beanDefinition);
         when(beanDefinition.getScope()).thenReturn("");
 
         subj.postProcessBeforeInitialization(bean, BEAN_NAME);
 
-        verify(beanFactory).findAnnotationOnBean(eq(BEAN_NAME), eq(UpdatableBean.class));
+        verify(beanFactory).containsBean(eq(BEAN_NAME));
+        verify(beanFactory).findAnnotationOnBean(eq(BEAN_NAME), eq(Updatable.class));
         verify(beanFactory).getBeanDefinition(BEAN_NAME);
         verify(beanDefinition).getScope();
 
@@ -131,5 +137,22 @@ class UpdatableAnnotationBeanPostProcessorTest extends AbstractMockTest {
         assertSame(bean, beanCaptor.getValue());
         assertSame(proxyBean, proxyBeanCaptor.getValue());
         assertSame(updatableBeanAnnotation, beanAnnotationCaptor.getValue());
+    }
+
+    @Test
+    void shouldProcessInvalidBean() {
+        final Object bean = new Object();
+        final Object proxyBean = new Object();
+
+        when(beanFactory.containsBean(eq(BEAN_NAME))).thenReturn(false);
+
+        final Object result1 = subj.postProcessBeforeInitialization(bean, BEAN_NAME);
+
+        verify(beanFactory).containsBean(eq(BEAN_NAME));
+
+        final Object result2 = subj.postProcessAfterInitialization(proxyBean, BEAN_NAME);
+
+        assertSame(bean, result1);
+        assertSame(proxyBean, result2);
     }
 }

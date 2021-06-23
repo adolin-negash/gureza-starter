@@ -17,8 +17,7 @@ import org.springframework.core.annotation.AliasFor;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD})
 @Inherited
-@Bean
-public @interface UpdatableBean {
+public @interface Updatable {
 
     /**
      * Список названий бина.
